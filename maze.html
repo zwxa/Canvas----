@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>maze</title>
+ <style>
+ img{
+  display: none;
+ }
+ canvas {
+  border: 6px double black;
+  background: blue;
+}
+</style>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+<div>
+    <button onclick="loadHard()">Load Hard Maze</button>
+    <button onclick="loadEasy()">Load Easy Maze</button>
+  </div>
+<img src="face.png" id="face">
+</body>
+<script>
+var canvas,context;
+var x=0,y=0;
+var dx=0,dy=0;
+window.onload = function(){
+     canvas = document.getElementById("canvas");
+     context = canvas.getContext("2d");
+     //绘制迷宫背景
+     drawMaze("maze.png",5,5);
+
+
+     window.onkeydown = processKey;
+}
+var timer;
+
+function drawMaze(mazeFile,startingX,startingY){
+    clearTimeout(timer);
+    dx=0;
+    dy=0;
+
+    var imgMaze = new Image();
+    imgMaze.onload = function(){
+        //调整画布大小=迷宫图片
+        canvas.width = imgMaze.width;
+        canvas.height = imgMaze.height;
+
+        //绘制迷宫     
+        context.drawImage(imgMaze,0,0);
+
+        //绘制笑脸
+        x = startingX;
+        y= startingY;
+        var imgFace = document.getElementById("face");
+        context.drawImage(imgFace,x,y);
+        context.stroke();
+        timer = setTimeout(drawFrame,10);
+    };
+    imgMaze.src = mazeFile;
+
+}
+function processKey(e){
+    dx=0;
+    dy=0;
+    if(e.keyCode==38){
+        dy=-1;
+    }
+    if(e.keyCode==40){
+        dy=1;
+    }
+    if(e.keyCode==37){
+        dx=-1;
+    }
+    if(e.keyCode==39){
+        dx=1;
+    }
+};
+function drawFrame(){
+    if(dx != 0 || dy != 0){
+        //绘制移动痕迹
+        context.beginPath();
+        context.fillStyle = "rgb(254,244,200)";
+        context.rect(x,y,15,15);
+        context.fill();
+
+        x+=dx;
+        y+=dy;
+
+        if(ckeckForCollision()){
+            x -= dx;
+            y -=dy;
+            dx=0;
+            dy=0;
+        }
+
+         var imgFace = document.getElementById("face");
+        context.drawImage(imgFace,x,y);
+
+        if(y>(canvas.height-17)){
+            alert("You win　！");
+            return;
+        }
+    }
+    timer = setTimeout(drawFrame,10);
+
+
+};
+function ckeckForCollision(){
+  // 取得笑脸的像素块
+  var imgData = context.getImageData(x-1, y-1, 15+2, 15+2);
+  console.log(imgData);
+  var pixels = imgData.data;
+
+  // 检测其中的像素
+  for (var i = 0; n = pixels.length, i < n; i += 4) {
+    var red = pixels[i];
+    var green = pixels[i+1];
+    var blue = pixels[i+2];
+    var alpha = pixels[i+3];
+
+    // 检测黑色的墙
+    if (red == 0 && green == 0 && blue == 0) {
+      return true;
+    }
+    //检测灰色的边
+    if (red == 169 && green == 169 && blue == 169) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+function loadEasy() {
+  drawMaze('maze.png', 5, 5);
+}
+
+function loadHard() {
+  drawMaze('hard-maze.png', 268, 5);
+}
+
+
+</script>
+</html>
